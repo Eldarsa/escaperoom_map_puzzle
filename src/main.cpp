@@ -20,8 +20,8 @@
 // Number of RFID readers
 const byte numReaders = 5; 
 
-// Each reader has a unique Slave Select pin
-const byte slaveSelectPins[] = {2,3,4,5};
+// Each reader has a unique Slave Select (ss) pin
+const byte ssPins[] = {2,3,4,5}; 
 
 //They'll share the same reset pin
 const byte resetPin = 8;
@@ -62,15 +62,27 @@ void setup() {
 
     mfrc522[i].PCD_Init(ssPins[i], resetPin);
 
+    // Set the gain to max - not sure this makes any difference ..
+    // mfrc522[i].PDC_SetAntennaGain(MFRC522::PCD_RxGain::RxGain_max);
+
+    Serial.print(F("Reader #"));
+    Serial.print(i);
+    Serial.print(F(" initialized on pin "));
+    Serial.print(String(ssPins[i]));
+    Serial.print(F(". Antenna strength: "));
+    Serial.print(mfrc522[i].PCD_GetAntennaGain());
+    Serial.print(F(". Version : "));
+    mfrc522[i].PCD_DumpVersionToSerial();
+
+    // Slight delay before activating next reader
+    delay(100);
   }
+
+  Serial.println(F(" --- END SETUP ---"));
 
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  
 }
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
-}
