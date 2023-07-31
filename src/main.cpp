@@ -38,6 +38,7 @@ String currentIDs[numReaders];
 // This pin will be driven LOW to release the lock
 const byte lockPin = A0;
 
+void onSolve();
 
 void setup() {
 
@@ -84,5 +85,75 @@ void setup() {
 
 void loop() {
   
+  // Assume the puzzle has been solved
+  bool puzzleSolved = true;
+
+  // Assume the tags have not changed since last reading
+  bool changedValue = false;
+
+  for (uint8_t i=0; i<numReaders; i++) {
+
+      // Initialize the sensor
+      mfrc522[i].PCD_Init();
+
+      // String to hold the ID detected by each sensor
+      String readRFID = "";
+
+      // If the current reading is different from the last known reading
+      if(readRFID != currentIDs[i])
+      {
+        // Set flag to show puzzle state has changed
+        changedValue = true;
+        // Update stored value for this sensor
+        currentIDs[i] = readRFID;
+      }
+
+      // Sets false if at least one RFID is not correct.
+      if(currentIDs[i] != correctIDs[i]){
+        puzzleSolved = false;
+      } 
+
+      // Halt PICC
+      mfrc522[i].PICC_HaltA();
+      
+      // Stop encryption on PCD
+      mfrc522[i].PCD_StopCrypto1();
+
+      // If at least one sensor has changed
+      if(changedValue) {
+        
+        // Dump to serial state of all sensors
+        for (uint8_t i=0; i<numReaders; i++) {
+          Serial.print(F("Reader #"));
+          Serial.print(String(i));
+          Serial.print(F(" on Pin #"));
+          Serial.print(String((ssPins[i])));
+          Serial.print(F(" detected tag: "));
+          Serial.println(currentIDs[i]);
+        }
+        Serial.println(F("---"));
+
+      }
+
+      if (puzzleSolved){
+        onSolve();
+      }
+
+  }
+
 }
 
+
+void onSolve(){
+
+  #ifdef DEBUG
+    Serial.println(F("Puzzle Solved!"));
+  #endif
+
+  // Release the lock
+  digitalWrite(lockPin, LOW);
+
+  while(true){
+
+  }
+}
