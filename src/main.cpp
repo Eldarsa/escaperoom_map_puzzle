@@ -15,16 +15,26 @@
 // Provides debugging information if defined
 #define DEBUG
 
+#define LOCK_PIN 7
 
 // CONSTANTS
 // Number of RFID readers
-const byte numReaders = 5; 
+const byte numReaders = 5;
+
+// IMPORTANT: THE MISO, MOSI, SCK, and SS pins are always the same pins on Arduino Uno: 
+// https://arduino.stackexchange.com/questions/43837/connecting-multiple-boards-to-arduino-uno-r3 
+// This is why they are not defined here.
+
+// SCK: Pin 13
+// MISO: Pin 12
+// MOSI: Pin 11
+// SS: Pin 10
 
 // Each reader has a unique Slave Select (ss) pin
-const byte ssPins[] = {2,3,4,5}; 
+const byte ssPins[] = {2,3,4,5,6}; 
 
 //They'll share the same reset pin
-const byte resetPin = 8;
+const byte resetPin = 5;
 
 // Initialize an array of MRFC522 instances representing each reader
 MFRC522 mfrc522[numReaders];
@@ -34,9 +44,6 @@ const String correctIDs[] = {"replace", "replace", "replace", "replace", "replac
 
 // The tag IDs currently detected by each reader
 String currentIDs[numReaders];
-
-// This pin will be driven LOW to release the lock
-const byte lockPin = A0;
 
 void onSolve();
 
@@ -48,8 +55,8 @@ void setup() {
   #endif
 
   // Set the lock pin high to secure the lock.
-  pinMode(lockPin, OUTPUT);
-  digitalWrite(lockPin, HIGH);
+  pinMode(LOCK_PIN, OUTPUT);
+  digitalWrite(LOCK_PIN, HIGH);
 
   //Initialize the SPI bus
   SPI.begin();
@@ -151,7 +158,7 @@ void onSolve(){
   #endif
 
   // Release the lock
-  digitalWrite(lockPin, LOW);
+  digitalWrite(LOCK_PIN, LOW);
 
   while(true){
 
